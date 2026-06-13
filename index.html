@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foxboro 34C-AP Modernization Simulator — RASCO Ethylene Plant</title>
+<style>
+  :root {
+    --bg:       #0d1117;
+    --surface:  #161b22;
+    --panel:    #1c2330;
+    --border:   #30363d;
+    --accent:   #1f6feb;
+    --gold:     #d29922;
+    --green:    #3fb950;
+    --orange:   #f0883e;
+    --red:      #f85149;
+    --purple:   #bc8cff;
+    --blue:     #58a6ff;
+    --text:     #e6edf3;
+    --muted:    #8b949e;
+    --rtd:      #ff4444;
+    --tc:       #4488ff;
+    --signal4:  #22c55e;
+    --psi:      #f97316;
+    --digital:  #a855f7;
+    --font-mono: 'Courier New', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 13px;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #0d1117 0%, #1c2330 100%);
+    border-bottom: 2px solid var(--gold);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .logo-block { display: flex; align-items: center; gap: 14px; }
+
+  .company-badge {
+    background: var(--gold);
+    color: #000;
+    font-weight: 800;
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    letter-spacing: .5px;
+  }
+
+  .header-title { line-height: 1.2; }
+  .header-title h1 { font-size: 16px; font-weight: 700; color: var(--text); }
+  .header-title p  { font-size: 11px; color: var(--muted); }
+
+  .header-meta { display: flex; gap: 20px; align-items: center; }
+  .meta-item { text-align: center; }
+  .meta-item .val { font-size: 13px; font-weight: 700; color: var(--gold); }
+  .meta-item .lbl { font-size: 10px; color: var(--muted); }
+
+  /* ── SCENARIO TABS ── */
+  .scenario-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+  }
+
+  .tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 12px 16px;
+    white-space: nowrap;
+    transition: all .2s;
+    letter-spacing: .3px;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+  /* ── MAIN LAYOUT ── */
+  .main { display: flex; height: calc(100vh - 115px); overflow: hidden; }
+
+  /* LEFT: field panel */
+  .field-panel {
+    width: 190px;
+    min-width: 190px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .panel-hdr {
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 12px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .loop-card {
+    margin: 10px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color .2s;
+  }
+  .loop-card:hover, .loop-card.active { border-color: var(--gold); }
+
+  .loop-card-hdr {
+    background: #21262d;
+    padding: 7px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: .5px;
+    text-transform: uppercase;
+  }
+  .loop-card-hdr.rtd { border-left: 3px solid var(--rtd); }
+  .loop-card-hdr.tc  { border-left: 3px solid var(--tc);  }
+
+  .loop-body { padding: 8px 10px; }
+
+  .instrument-bubble {
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700;
+    margin: 0 auto 6px;
+    text-align: center;
+    line-height: 1.2;
+    background: var(--surface);
+  }
+  .bubble-rtd { border-color: var(--rtd); color: var(--rtd); }
+  .bubble-tc  { border-color: var(--tc);  color: var(--tc);  }
+
+  .loop-info { font-size: 11px; text-align: center; }
+  .loop-info .tag { font-weight: 700; color: var(--text); }
+  .loop-info .sensor { color: var(--muted); font-size: 10px; }
+  .loop-info .dest   { color: var(--gold); font-size: 10px; margin-top: 2px; }
+
+  .live-reading {
+    display: flex; align-items: baseline; justify-content: center;
+    gap: 3px; margin-top: 6px;
+  }
+  .live-val { font-size: 18px; font-weight: 800; color: var(--green); font-family: var(--font-mono); }
+  .live-unit { font-size: 10px; color: var(--muted); }
+
+  /* CENTER: signal flow canvas */
+  .center-panel {
+    flex: 1;
+    background: var(--bg);
+    overflow: auto;
+    padding: 16px;
+    position: relative;
+  }
+
+  .scenario-view { display: none; }
+  .scenario-view.active { display: block; }
+
+  .scene-title {
+    font-size: 13px; font-weight: 700; color: var(--gold);
+    letter-spacing: .5px; text-transform: uppercase;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .scene-title .badge {
+    background: var(--gold); color: #000;
+    font-size: 9px; padding: 2px 6px; border-radius: 3px;
+  }
+
+  /* Signal flow diagram */
+  .flow-diagram {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow-x: auto;
+    padding: 20px 0;
+  }
+
+  .flow-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 120px;
+  }
+
+  .flow-box {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    text-align: center;
+    min-width: 110px;
+    transition: all .3s;
+  }
+  .flow-box:hover { border-color: var(--gold); transform: translateY(-2px); }
+  .flow-box.field { border-color: var(--rtd); }
+  .flow-box.field.tc { border-color: var(--tc); }
+  .flow-box.legacy { border-color: var(--red); background: #1a0e0e; }
+  .flow-box.modern { border-color: var(--green); background: #0a1e0f; }
+  .flow-box.pneumatic { border-color: var(--psi); background: #1a1000; }
+  .flow-box.controller { border-color: var(--blue); }
+  .flow-box.dcs { border-color: var(--purple); background: #110d1a; }
+  .flow-box.alarm { border-color: var(--red); background: #1a0e0e; animation: pulse-alarm .8s infinite; }
+
+  @keyframes pulse-alarm {
+    0%,100% { box-shadow: 0 0 0 0 rgba(248,81,73,.4); }
+    50% { box-shadow: 0 0 0 8px rgba(248,81,73,0); }
+  }
+
+  .flow-box-icon { font-size: 22px; margin-bottom: 4px; }
+  .flow-box-title { font-size: 11px; font-weight: 700; line-height: 1.3; }
+  .flow-box-model { font-size: 9px; color: var(--muted); font-family: var(--font-mono); margin-top: 3px; }
+  .flow-box-signal { font-size: 10px; margin-top: 4px; font-weight: 600; }
+
+  /* Signal arrows */
+  .signal-arrow {
+    display: flex; flex-direction: column; align-items: center;
+    width: 60px; flex-shrink: 0;
+    gap: 3px;
+  }
+  .arrow-line {
+    height: 2px; width: 100%; position: relative;
+    animation: flow-anim 1.5s linear infinite;
+    background-size: 12px 2px;
+    background-repeat: repeat-x;
+    border-radius: 1px;
+  }
+  .arrow-line::after {
+    content: '▶'; position: absolute; right: -5px; top: -7px;
+    font-size: 10px;
+  }
+  .arrow-rtd  { background-color: var(--rtd);  }
+  .arrow-rtd::after  { color: var(--rtd);  }
+  .arrow-tc   { background-color: var(--tc);   }
+  .arrow-tc::after   { color: var(--tc);   }
+  .arrow-4ma  { background-color: var(--signal4); }
+  .arrow-4ma::after  { color: var(--signal4); }
+  .arrow-psi  { background-color: var(--psi);  }
+  .arrow-psi::after  { color: var(--psi);  }
+  .arrow-data { background-color: var(--digital); background-image: repeating-linear-gradient(90deg, var(--digital) 0, var(--digital) 6px, transparent 6px, transparent 12px); }
+  .arrow-data::after { color: var(--digital); }
+
+  @keyframes flow-anim {
+    0% { background-position: 0 0; }
+    100% { background-position: 24px 0; }
+  }
+
+  .arrow-label { font-size: 9px; color: var(--muted); white-space: nowrap; }
+
+  /* Loop rows for 2-loop layout */
+  .dual-loop { display: flex; flex-direction: column; gap: 20px; }
+
+  .loop-row { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+  .loop-row-hdr {
+    font-size: 11px; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .5px;
+    margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .loop-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* Rack view */
+  .rack-container {
+    background: #111;
+    border: 3px solid #333;
+    border-radius: 8px;
+    padding: 10px;
+    max-width: 700px;
+    margin: 16px 0;
+  }
+  .rack-label {
+    font-size: 11px; font-weight: 700; color: var(--gold);
+    letter-spacing: 1px; text-align: center; margin-bottom: 8px;
+    font-family: var(--font-mono);
+  }
+  .rack-slots {
+    display: flex; gap: 3px; justify-content: center;
+    flex-wrap: wrap;
+  }
+  .rack-slot {
+    width: 38px; height: 80px;
+    border: 1px solid #444;
+    border-radius: 4px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-size: 8px; font-weight: 700;
+    gap: 3px; cursor: default;
+    transition: all .2s;
+    text-align: center;
+    line-height: 1.2;
+  }
+  .rack-slot:hover { transform: scaleY(1.05); z-index: 2; }
+  .slot-empty { background: #1a1a1a; color: #444; border-color: #333; }
+  .slot-rtd   { background: #1a0808; color: var(--rtd); border-color: var(--rtd); }
+  .slot-tc    { background: #080818; color: var(--tc); border-color: var(--tc); }
+  .slot-ep    { background: #1a1000; color: var(--psi); border-color: var(--psi); }
+  .slot-comm  { background: #110d1a; color: var(--digital); border-color: var(--digital); }
+  .slot-psu   { background: #0a1800; color: var(--green); border-color: var(--green); }
+  .slot-num   { font-size: 7px; color: #555; }
+
+  /* RIGHT: info panel */
+  .info-panel {
+    width: 220px; min-width: 220px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    overflow-y: auto;
+    display: flex; flex-direction: column;
+  }
+
+  .info-section { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  .info-section h3 { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+
+  .signal-legend { display: flex; flex-direction: column; gap: 5px; }
+  .legend-item { display: flex; align-items: center; gap: 7px; font-size: 11px; }
+  .legend-dot { width: 12px; height: 4px; border-radius: 2px; flex-shrink: 0; }
+
+  .spec-table { width: 100%; border-collapse: collapse; }
+  .spec-table td { padding: 3px 0; font-size: 11px; vertical-align: top; }
+  .spec-table td:first-child { color: var(--muted); width: 45%; padding-right: 6px; }
+  .spec-table td:last-child { color: var(--text); font-weight: 600; font-family: var(--font-mono); font-size: 10px; }
+
+  .calc-block { background: var(--panel); border-radius: 6px; padding: 10px; }
+  .calc-label { font-size: 10px; color: var(--muted); margin-bottom: 4px; }
+  .calc-input {
+    width: 100%; background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); border-radius: 4px; padding: 5px 8px;
+    font-size: 12px; font-family: var(--font-mono);
+    margin-bottom: 8px;
+  }
+  .calc-input:focus { outline: none; border-color: var(--gold); }
+  .calc-result { display: flex; flex-direction: column; gap: 4px; }
+  .calc-row { display: flex; justify-content: space-between; align-items: center; }
+  .calc-key { font-size: 10px; color: var(--muted); }
+  .calc-val { font-size: 12px; font-weight: 700; font-family: var(--font-mono); }
+
+  /* Status Bar */
+  .status-bar {
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    padding: 5px 16px;
+    display: flex; gap: 20px; align-items: center;
+    flex-shrink: 0;
+  }
+  .status-item { display: flex; align-items: center; gap: 5px; font-size: 10px; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .status-ok   { background: var(--green); }
+  .status-warn { background: var(--gold); }
+  .status-err  { background: var(--red); animation: blink .6s infinite; }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .2; } }
+
+  .alarm-banner {
+    background: #2d1515; border: 1px solid var(--red);
+    border-radius: 6px; padding: 10px 14px;
+    margin-bottom: 14px; display: none;
+  }
+  .alarm-banner.active { display: block; }
+  .alarm-banner h4 { color: var(--red); font-size: 12px; margin-bottom: 6px; }
+  .alarm-list { display: flex; flex-direction: column; gap: 4px; }
+  .alarm-item { font-size: 11px; color: var(--muted); display: flex; gap: 6px; }
+  .alarm-item::before { content: '⚠'; color: var(--red); }
+
+  .fault-controls { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+  .fault-btn {
+    background: var(--panel); border: 1px solid var(--border);
+    color: var(--text); border-radius: 4px; padding: 6px 10px;
+    font-size: 11px; cursor: pointer; text-align: left;
+    transition: all .2s;
+  }
+  .fault-btn:hover { border-color: var(--red); color: var(--red); }
+  .fault-btn.active-fault { border-color: var(--red); background: #2d1515; color: var(--red); }
+
+  .ack-btn {
+    background: var(--green); border: none; color: #000;
+    border-radius: 4px; padding: 6px 14px; font-size: 11px;
+    font-weight: 700; cursor: pointer; margin-top: 8px; width: 100%;
+  }
+
+  /* Comparison table */
+  .comparison-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 11px; margin-top: 10px;
+  }
+  .comparison-table th {
+    background: var(--panel); padding: 8px 10px;
+    text-align: left; color: var(--gold);
+    font-size: 10px; letter-spacing: .5px;
+    border-bottom: 1px solid var(--border);
+  }
+  .comparison-table td {
+    padding: 7px 10px; border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .comparison-table tr:hover td { background: var(--surface); }
+  .check { color: var(--green); font-size: 12px; }
+  .cross { color: var(--red); font-size: 12px; }
+  .partial { color: var(--gold); font-size: 12px; }
+
+  /* Roadmap */
+  .roadmap { display: flex; gap: 0; margin-top: 10px; }
+  .roadmap-step {
+    flex: 1; background: var(--panel);
+    border: 1px solid var(--border);
+    border-right: none; padding: 14px 12px;
+    position: relative;
+  }
+  .roadmap-step:last-child { border-right: 1px solid var(--border); border-radius: 0 6px 6px 0; }
+  .roadmap-step:first-child { border-radius: 6px 0 0 6px; }
+  .roadmap-step::after {
+    content: '▶'; position: absolute; right: -10px; top: 50%;
+    transform: translateY(-50%); color: var(--gold); font-size: 12px; z-index: 1;
+  }
+  .roadmap-step:last-child::after { display: none; }
+  .roadmap-step h4 { font-size: 10px; color: var(--gold); margin-bottom: 6px; font-weight: 700; }
+  .roadmap-step p  { font-size: 10px; color: var(--muted); line-height: 1.5; }
+  .roadmap-step .phase { font-size: 9px; color: #555; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .5px; }
+
+  .info-card { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; margin-bottom: 8px; }
+  .info-card h4 { font-size: 11px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .info-card ul { list-style: none; display: flex; flex-direction: column; gap: 3px; }
+  .info-card ul li { font-size: 10px; color: var(--muted); padding-left: 12px; position: relative; }
+  .info-card ul li::before { content: '•'; position: absolute; left: 0; color: var(--gold); }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+
+  /* Modbus data display */
+  .modbus-display {
+    background: #000; border: 1px solid var(--digital);
+    border-radius: 6px; padding: 10px; font-family: var(--font-mono);
+    font-size: 10px; margin-top: 10px; max-height: 180px; overflow-y: auto;
+  }
+  .modbus-row { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid #1a1a1a; }
+  .modbus-addr { color: var(--digital); }
+  .modbus-tag  { color: var(--muted); }
+  .modbus-val  { color: var(--green); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+
+  /* Tooltip */
+  [data-tip] { position: relative; cursor: help; }
+  [data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%);
+    background: #21262d; border: 1px solid var(--border);
+    color: var(--text); font-size: 10px; padding: 5px 8px;
+    border-radius: 4px; white-space: nowrap; z-index: 999;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<header>
+  <div class="logo-block">
+    <div class="company-badge">RASCO</div>
+    <div class="header-title">
+      <h1>Foxboro 34C-AP Modernization Simulator</h1>
+      <p>Ras Lanuf Oil &amp; Gas Processing Co. — Ethylene Plant, Libya · Drawn by RASCO Instrumentation Engineering · May 2025</p>
+    </div>
+  </div>
+  <div class="header-meta">
+    <div class="meta-item"><div class="val">34C-AP</div><div class="lbl">Legacy Device</div></div>
+    <div class="meta-item"><div class="val">3–15 PSI</div><div class="lbl">Pneumatic Output</div></div>
+    <div class="meta-item"><div class="val">Pt100 / TC</div><div class="lbl">Input Type</div></div>
+    <div class="meta-item"><div class="val">120 VAC</div><div class="lbl">Plant Power</div></div>
+    <div class="meta-item"><div class="val">20 PSI</div><div class="lbl">Instr. Air</div></div>
+  </div>
+</header>
+
+<!-- ═══════════════ SCENARIO TABS ═══════════════ -->
+<div class="scenario-bar">
+  <button class="tab-btn active" onclick="setScenario('legacy',this)">① Legacy Foxboro System</button>
+  <button class="tab-btn" onclick="setScenario('alt1',this)">② Alt 1 — DCP2 Compact Nest</button>
+  <button class="tab-btn" onclick="setScenario('alt2',this)">③ Alt 2 — VJ Series + PH10</button>
+  <button class="tab-btn" onclick="setScenario('electronic',this)">④ Electronic Upgrade</button>
+  <button class="tab-btn" onclick="setScenario('dcs',this)">⑤ DCS / SCADA Migration</button>
+  <button class="tab-btn" onclick="setScenario('comparison',this)">⑥ Comparison Table</button>
+  <button class="tab-btn" onclick="setScenario('alarm',this)">⑦ Alarm &amp; Fault Simulation</button>
+  <button class="tab-btn" onclick="setScenario('roadmap',this)">⑧ Migration Roadmap</button>
+</div>
+
+<!-- ═══════════════ MAIN BODY ═══════════════ -->
+<div class="main">
+
+  <!-- LEFT PANEL -->
+  <div class="field-panel">
+    <div class="panel-hdr">Field Instruments</div>
+
+    <div class="loop-card active" onclick="selectLoop('A',this)">
+      <div class="loop-card-hdr tc">Loop A — Furnace A</div>
+      <div class="loop-body">
+        <div class="instrument-bubble bubble-tc">TE<br>101A</div>
+        <div class="loop-info">
+          <div class="tag">TE-101A</div>
+          <div class="sensor">Thermocouple Type K</div>
+          <div class="dest">→ TIC-101A</div>
+        </div>
+        <div class="live-reading">
+          <span class="live-val" id="tempA">485</span>
+          <span class="live-unit">°C</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="loop-card" onclick="selectLoop('B',this)">
+      <div class="loop-card-hdr rtd">Loop B — Reactor</div>
+      <div class="loop-body">
+        <div class="instrument-bubble bubble-rtd">TE<br>1008</div>
+        <div class="loop-info">
+          <div class="tag">TE-1008</div>
+          <div class="sensor">Pt100 RTD 3-Wire</div>
+          <div class="dest">→ TR-1008</div>
+        </div>
+        <div class="live-reading">
+          <span class="live-val" id="tempB">412</span>
+          <span class="live-unit">°C</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-hdr" style="margin-top:10px">Signal Calculator</div>
+    <div style="padding:10px">
+      <div class="calc-block">
+        <div class="calc-label">Temperature Input (°C)</div>
+        <input class="calc-input" type="number" id="calcTemp" value="485" min="0" max="600" oninput="updateCalc()">
+        <div class="calc-label">Range: 0–600 °C</div>
+        <div class="calc-result" style="margin-top:8px">
+          <div class="calc-row"><span class="calc-key">4–20 mA:</span><span class="calc-val" id="c4ma" style="color:var(--signal4)">17.0 mA</span></div>
+          <div class="calc-row"><span class="calc-key">0–5 VDC:</span><span class="calc-val" id="c5v"  style="color:var(--signal4)">4.04 V</span></div>
+          <div class="calc-row"><span class="calc-key">3–15 PSI:</span><span class="calc-val" id="cpsi" style="color:var(--psi)">12.7 PSI</span></div>
+          <div class="calc-row"><span class="calc-key">Span %:</span><span class="calc-val" id="cspan">80.8%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER PANEL -->
+  <div class="center-panel">
+
+    <!-- ── SCENARIO 1: LEGACY ── -->
+    <div class="scenario-view active" id="sc-legacy">
+      <div class="scene-title">
+        <span>Legacy Foxboro 34C-AP Architecture</span>
+        <span class="badge">OBSOLETE</span>
+      </div>
+      <div class="dual-loop">
+        <div class="loop-row">
+          <div class="loop-row-hdr"><div class="loop-dot" style="background:var(--tc)"></div>Loop A — Furnace A Temperature (TE-101A → TIC-101A)</div>
+          <div class="flow-diagram">
+            <div class="flow-stage">
+              <div class="flow-box field tc">
+                <div class="flow-box-icon">🌡</div>
+                <div class="flow-box-title">TE-101A</div>
+                <div class="flow-box-model">TC Type K</div>
+                <div class="flow-box-signal" style="color:var(--tc)">mV Signal</div>
+              </div>
+            </div>
+            <div class="signal-arrow"><div class="arrow-line arrow-tc"></div><div class="arrow-label">2-Wire TC</div></div>
+            <div class="flow-stage">
+              <div class="flow-box legacy" data-tip="Foxboro 34C-AP: Electromechanical nozzle-flapper. OBSOLETE — no spare parts.">
+                <div class="flow-box-icon">⚙️</div>
+                <div class="flow-box-title">Foxboro 34C-AP</div>
+                <div class="flow-box-model">R/P Converter</div>
+                <div class="flow-box-signal" style="color:var(--red)">OBSOLETE</div>
+              </div>
+            </div>
+            <div class="signal-arrow"><div class="arrow-line arrow-psi"></div><div class="arrow-label">3–15 PSI</div></div>
+            <div class="flow-stage">
+              <div class="flow-box controller">
+                <div class="flow-box-icon">🎛</div>
+                <div class="flow-box-title">TIC-101A</div>
+                <div class="flow-box-model">Foxboro Pneumatic Controller</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="loop-row">
+          <div class="loop-row-hdr"><div class="loop-dot" style="background:var(--rtd)"></div>Loop B — Reactor Temperature (TE-1008 → TR-1008)</div>
+          <div class="flow-diagram">
+            <div class="flow-stage">
+              <div class="flow-box field">
+                <div class="flow-box-icon">🌡</div>
+                <div class="flow-box-title">TE-1008</div>
+                <div class="flow-box-model">Pt100 RTD 3-Wire</div>
+                <div class="flow-box-signal" style="color:var(--rtd)">Ω Resistance</div>
+              </div>
+            </div>
+            <div class="signal-arrow"><div class="arrow-line arrow-rtd"></div><div class="arrow-label">3-Wire RTD</div></div>
+            <div class="flow-stage">
+              <div class="flow-box legacy" data-tip="Surface/Wall-Mount cast aluminum box. Uses force-balance mechanism — prone to drift.">
+                <div class="flow-box-icon">⚙️</div>
+                <div class="flow-box-title">Foxboro 34C-AP</div>
+                <div class="flow-box-model">R/P Converter</div>
+                <div class="flow-box-signal" style="color:var(--red)">OBSOLETE</div>
+              </div>
+            </div>
+            <div class="signal-arrow"><div class="arrow-line arrow-psi"></div><div class="arrow-label">3–15 PSI</div></div>
+            <div class="flow-stage">
+              <div class="flow-box controller">
+                <div class="flow-box-icon">📈</div>
+                <div class="flow-box-title">TR-1008</div>
+                <div class="flow-box-model">Foxboro Pneumatic Recorder</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="info-card">
+          <h4>⚠ Obsolescence Issues</h4>
+          <ul>
+            <li>Fully discontinued — no spare parts</li>
+            <li>Force-balance nozzle-flapper drifts</li>
+            <li>Vibration causes calibration loss</li>
+            <li>10–50 mA diagnostic injection required</li>
+            <li>Manual mechanical pot adjustment</li>
+            <li>No digital communication possible</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h4>📋 Original Specifications</h4>
+          <ul>
+            <li>Input: Pt100 RTD / TC profiles</li>
+            <li>Output: 3–15 PSI (20–100 kPa)</li>
+            <li>Power: 120 VAC ±10%, 50 Hz</li>
+            <li>Air supply: 20 PSI instrument air</li>
+            <li>Accuracy: ±0.5% of span</li>
+            <li>Span: 400–600 °C (adjustable)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 2: ALT 1 DCP2 ── -->
+    <div class="scenario-view" id="sc-alt1">
+      <div class="scene-title">
+        <span>Alternative 1 — Yokogawa JUXTA DCP2 Compact Nest</span>
+        <span class="badge">RECOMMENDED</span>
+      </div>
+      <div class="dual-loop">
+        <div class="loop-row">
+          <div class="loop-row-hdr"><div class="loop-dot" style="background:var(--tc)"></div>Loop A — Furnace A (TE-101A → DT5 → DF0 → TIC-101A)</div>
+          <div class="flow-diagram">
+            <div class="flow-stage">
+              <div class="flow-box field tc"><div class="flow-box-icon">🌡</div><div class="flow-box-title">TE-101A</div><div class="flow-box-model">TC Type K</div></div>
+            </div>
+            <div class="signal-arrow"><div class="arrow-line arrow-tc"></div><div class="arrow-label">2-Wire TC</div></div>
+            <div class="flow-stage">
+              <div class="flow-box modern" data-tip="DT5: Thermocouple input card. Supports multi-class TC. Slot inside DCP2 nest.">
+                <div class="flow-box-icon">🔌</div>
+                <div class="flow-box-title">DT5 Card</div>
+                <div class="flow-box-model">TC Input · Slot 1</div>
+                <div class="flow-box-signal" style="color:var(--signal4)">→ 4–20 mA</div>
+              </div>
+            </div>
+            <div class="signal-arrow"><div class="arrow-line arrow-4ma"></div><div class="arrow-label">4–20 mA</div></div>
+            <div class="flow-stage">
+              <div class="flow-box pneumatic" data-tip="DF0: E/P converter card. 4–20 mA in → 3–15 PSI out. Uses backplane air header.">
+                <div class="flow-box-icon">💨</div>
+                <div class="flow-box-title">DF0 Card</div>
+                <div class="flow-box-model">E/P Converter · Slot 2</div>
+                <div class="flow-box-signal" style="color:var(--psi)">→ 3–15 PSI</div>
+              </div>
+            </div>
+            <div class="signal-arrow"><div class="arrow-line arrow-psi"></div><div class="arrow-label">3–15 PSI</div></div>
+            <div class="flow-stage">
+              <div class="flow-box controller"><div class="flow-box-icon">🎛</div><div class="flow-box-title">TIC-101A</div><div class="flow-box-model">Foxboro Pneumatic Controller</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="loop-row">
+          <div class="loop-row-hdr"><div class="loop-dot" style="background:var(--rtd)"></div>Loop B — Reactor (TE-1008 → DR5 → DF0 → TR-1008)</div>
+          <div class="flow-diagram">
+            <div class="flow-stage">
+              <div class="flow-box field"><div class="flow-box-icon">🌡</div><div class="flow-box-title">TE-1008</div><div class="flow-box-model">Pt100 RTD 3-Wire</div></div>
+            </div>
+            <div class="signal-arrow"><div class="arrow-line arrow-rtd"></div><div class="arrow-label">3-Wire RTD</div></div>
+            <div class="flow-stage">
+              <div class="flow-box modern" data-tip="DR5: RTD input card. 3-wire Pt100, free range type. Hot-swappable.">
+                <div class="flow-box-icon">🔌</div>
+                <div class="flow-box-title">DR5 Card</div>
+                <div class="flow-box-model">RTD Input · Slot 14</div>
+                <div class="flow-box-signal" style="color:var(--signal4)">→ 4–20 mA</div>
+              </div>
+            </div>
+            <div class="signal-arrow"><div class="arrow-line arrow-4ma"></div><div class="arrow-label">4–20 mA</div></div>
+            <div class="flow-stage">
+              <div class="flow-box pneumatic" data-tip="DF0: E/P converter. Integrated pneumatic header on DCP2 backplane.">
+                <div class="flow-box-icon">💨</div>
+                <div class="flow-box-title">DF0 Card</div>
+                <div class="flow-box-model">E/P Converter · Slot 15</div>
+                <div class="flow-box-signal" style="color:var(--psi)">→ 3–15 PSI</div>
+              </div>
+            </div>
+            <div class="signal-arrow"><div class="arrow-line arrow-psi"></div><div class="arrow-label">3–15 PSI</div></div>
+            <div class="flow-stage">
+              <div class="flow-box controller"><div class="flow-box-icon">📈</div><div class="flow-box-title">TR-1008</div><div class="flow-box-model">Foxboro Pneumatic Recorder</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DCP2 Rack View -->
+      <div style="margin-top:16px">
+        <div class="scene-title" style="font-size:11px;margin-bottom:10px">DCP2 Nest — 16-Slot Rack View (19" Rack Mounted, 5U)</div>
+        <div class="rack-container">
+          <div class="rack-label">YOKOGAWA JUXTA DCP2 NEST — 16 SLOT</div>
+          <div class="rack-slots" id="rack-alt1"></div>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:6px">
+          Power: X039 DIN-Rail PSU (110 VAC → 24 VDC) · Air: 20 PSI via Rc 3/8" header · Communication: DSC2 RS-485 Modbus RTU (Slot 16)
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:12px">
+        <div class="info-card">
+          <h4>✅ Advantages</h4>
+          <ul>
+            <li>Single compact nest — all-in-one</li>
+            <li>Hot-swappable cards (no shutdown)</li>
+            <li>Built-in pneumatic backplane header</li>
+            <li>RS-485 Modbus via DSC2 card</li>
+            <li>DR5 (RTD) + DT5 (TC) — mixed inputs</li>
+            <li>24 VDC backplane, X039 PSU for 110 VAC</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h4>📦 Bill of Materials</h4>
+          <ul>
+            <li>DCP2 — 16-Slot Nest (1 unit)</li>
+            <li>X039 — 24 VDC Rail PSU (1 unit)</li>
+            <li>DR5 — RTD Input Card (as required)</li>
+            <li>DT5 — TC Input Card (as required)</li>
+            <li>DF0 — E/P Converter Card (as required)</li>
+            <li>DSC2 — RS-485 Comm Card (1 unit)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 3: ALT 2 VJ+PH10 ── -->
+    <div class="scenario-view" id="sc-alt2">
+      <div class="scene-title">
+        <span>Alternative 2 — Yokogawa VJ Series + PH10 Architecture</span>
+        <span class="badge">SPLIT TIER</span>
+      </div>
+
+      <div class="dual-loop">
+        <div class="loop-row">
+          <div class="loop-row-hdr"><div class="loop-dot" style="background:var(--tc)"></div>Loop A — Furnace A (TE-101A → VJT6 → PH10 → TIC-101A)</div>
+          <div class="flow-diagram">
+            <div class="flow-stage">
+              <div class="flow-box field tc"><div class="flow-box-icon">🌡</div><div class="flow-box-title">TE-101A</div><div class="flow-box-model">TC Type K</div></div>
+            </div>
+            <div class="signal-arrow"><div class="arrow-line arrow-tc"></div><div class="arrow-label">2-Wire TC</div></div>
+            <div class="flow-stage">
+              <div class="flow-box modern" data-tip="VJT6 or VJU7: VJCE-01A 16-slot base. 110 VAC direct. Built-in Modbus.">
+                <div class="flow-box-icon">🔌</div>
+                <div class="flow-box-title">VJT6 / VJU7</div>
+                <div class="flow-box-model">TC Converter · Tier 1</div>
+                <div class="flow-box-signal" style="color:var(--signal4)">→ 4–20 mA</div>
+              </div>
+            </div>
+            <div class="signal-arrow"><div class="arrow-line arrow-4ma"></div><div class="arrow-label">4–20 mA jumper</div></div>
+            <div class="flow-stage">
+              <div class="flow-box pneumatic" data-tip="PH10 in X018 nest. 24 VDC. PPU-16 air manifold. ±0.5% accuracy.">
+                <div class="flow-box-icon">💨</div>
+                <div class="flow-box-title">PH10</div>
+                <div class="flow-box-model">I/P Converter · Tier 2</div>
+                <div class="flow-box-signal" style="color:var(--psi)">→ 3–15 PSI</div>
+              </div>
+            </div>
+            <div class="signal-arrow"><div class="arrow-line arrow-psi"></div><div class="arrow-label">3–15 PSI</div></div>
+            <div class="flow-stage">
+              <div class="flow-box controller"><div class="flow-box-icon">🎛</div><div class="flow-box-title">TIC-101A</div><div class="flow-box-model">Foxboro Controller</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="loop-row">
+          <div class="loop-row-hdr"><div class="loop-dot" style="background:var(--rtd)"></div>Loop B — Reactor (TE-1008 → VJR6 → PH10 → TR-1008)</div>
+          <div class="flow-diagram">
+            <div class="flow-stage">
+              <div class="flow-box field"><div class="flow-box-icon">🌡</div><div class="flow-box-title">TE-1008</div><div class="flow-box-model">Pt100 RTD 3-Wire</div></div>
+            </div>
+            <div class="signal-arrow"><div class="arrow-line arrow-rtd"></div><div class="arrow-label">3-Wire RTD</div></div>
+            <div class="flow-stage">
+              <div class="flow-box modern" data-tip="VJR6: dedicated 3-wire Pt100 RTD. Or use VJU7 universal for mixed inventory.">
+                <div class="flow-box-icon">🔌</div>
+                <div class="flow-box-title">VJR6 / VJU7</div>
+                <div class="flow-box-model">RTD Converter · Tier 1</div>
+                <div class="flow-box-signal" style="color:var(--signal4)">→ 4–20 mA</div>
+              </div>
+            </div>
+            <div class="signal-arrow"><div class="arrow-line arrow-4ma"></div><div class="arrow-label">4–20 mA jumper</div></div>
+            <div class="flow-stage">
+              <div class="flow-box pneumatic" data-tip="PH10 in X018 nest. PPU-16 manifold splits 20 PSI to each slot.">
+                <div class="flow-box-icon">💨</div>
+                <div class="flow-box-title">PH10</div>
+                <div class="flow-box-model">I/P Converter · Tier 2</div>
+                <div class="flow-box-signal" style="color:var(--psi)">→ 3–15 PSI</div>
+              </div>
+            </div>
+            <div class="signal-arrow"><div class="arrow-line arrow-psi"></div><div class="arrow-label">3–15 PSI</div></div>
+            <div class="flow-stage">
+              <div class="flow-box controller"><div class="flow-box-icon">📈</div><div class="flow-box-title">TR-1008</div><div class="flow-box-model">Foxboro Recorder</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two-tier rack view -->
+      <div style="margin-top:16px">
+        <div class="scene-title" style="font-size:11px;margin-bottom:10px">Two-Tier Rack Architecture</div>
+        <div class="rack-container">
+          <div class="rack-label">TIER 1 — VJCE-01A 16-SLOT BASE (110 VAC, Built-in Modbus)</div>
+          <div class="rack-slots" id="rack-vj"></div>
+        </div>
+        <div style="margin-top:8px">
+          <div class="rack-container">
+            <div class="rack-label">TIER 2 — YOKOGAWA X018 16-SLOT NEST — PH10 I/P (24 VDC, PPU-16 Air Bar)</div>
+            <div class="rack-slots" id="rack-ph10"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:12px">
+        <div class="info-card">
+          <h4>✅ Advantages</h4>
+          <ul>
+            <li>VJ base runs direct on 110 VAC</li>
+            <li>Modbus built into VJCE-01A base</li>
+            <li>VJU7 universal card → single spare type</li>
+            <li>Dedicated tiers easier to maintain</li>
+            <li>Each tier independently serviceable</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h4>⚠ Considerations</h4>
+          <ul>
+            <li>Two separate chassis needed (more space)</li>
+            <li>Hardwired jumpers between tiers</li>
+            <li>More internal wiring connection points</li>
+            <li>X018 nest needs separate 24 VDC PSU</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 4: ELECTRONIC ── -->
+    <div class="scenario-view" id="sc-electronic">
+      <div class="scene-title">
+        <span>Upgrade Plan 2 — Electronic Instrumentation (Remove Pneumatics)</span>
+        <span class="badge">FUTURE</span>
+      </div>
+      <div class="dual-loop">
+        <div class="loop-row">
+          <div class="loop-row-hdr"><div class="loop-dot" style="background:var(--tc)"></div>Loop A — Furnace A → GX10 Paperless Recorder</div>
+          <div class="flow-diagram">
+            <div class="flow-stage">
+              <div class="flow-box field tc"><div class="flow-box-icon">🌡</div><div class="flow-box-title">TE-101A</div><div class="flow-box-model">TC Type K</div></div>
+            </div>
+            <div class="signal-arrow"><div class="arrow-line arrow-tc"></div><div class="arrow-label">TC Signal</div></div>
+            <div class="flow-stage">
+              <div class="flow-box modern">
+                <div class="flow-box-icon">🔌</div>
+                <div class="flow-box-title">VJ Converter</div>
+                <div class="flow-box-model">VJCE-01A / DCP2</div>
+                <div class="flow-box-signal" style="color:var(--signal4)">→ 4–20 mA</div>
+              </div>
+            </div>
+            <div class="signal-arrow"><div class="arrow-line arrow-4ma"></div><div class="arrow-label">4–20 mA</div></div>
+            <div class="flow-stage">
+              <div class="flow-box dcs">
+                <div class="flow-box-icon">📊</div>
+                <div class="flow-box-title">GX10 Recorder</div>
+                <div class="flow-box-model">Paperless / Electronic</div>
+                <div class="flow-box-signal" style="color:var(--purple)">Ethernet</div>
+              </div>
+            </div>
+            <div class="signal-arrow"><div class="arrow-line arrow-data"></div><div class="arrow-label">Trend / Alarm</div></div>
+            <div class="flow-stage">
+              <div class="flow-box dcs">
+                <div class="flow-box-icon">🖥</div>
+                <div class="flow-box-title">Electronic Controller</div>
+                <div class="flow-box-model">Yokogawa / Siemens</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="loop-row">
+          <div class="loop-row-hdr" style="color:var(--orange)">⚠ Pneumatic Stage Removed — PH10 / DF0 Decommissioned</div>
+          <div style="padding:12px;font-size:11px;color:var(--muted)">
+            The 4–20 mA signal from the temperature converter is now routed directly to electronic instrumentation.
+            No pneumatic conversion stage is required. Instrument air tubing from previous stage can be capped.
+            Foxboro controllers and recorders replaced by Yokogawa GX10 or equivalent electronic systems.
+          </div>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-top:14px">
+        <div class="info-card"><h4>✅ Benefits Gained</h4><ul>
+          <li>Eliminates all pneumatic equipment</li><li>Eliminates pneumatic tubing maintenance</li>
+          <li>Improved measurement accuracy</li><li>Electronic data storage and trending</li>
+          <li>Ethernet communication support</li><li>Simplified DCS migration path</li>
+        </ul></div>
+        <div class="info-card"><h4>📋 New Equipment Required</h4><ul>
+          <li>Yokogawa GX10 Paperless Recorder</li><li>Electronic controller (Yokogawa/Siemens)</li>
+          <li>4–20 mA loops to new instruments</li><li>Electronic panel space allocation</li>
+        </ul></div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 5: DCS ── -->
+    <div class="scenario-view" id="sc-dcs">
+      <div class="scene-title">
+        <span>Upgrade Plan 3 — DCS / SCADA Digital Architecture</span>
+        <span class="badge">LONG-TERM</span>
+      </div>
+      <div class="dual-loop">
+        <div class="loop-row">
+          <div class="loop-row-hdr"><div class="loop-dot" style="background:var(--digital)"></div>Full Digital Migration — All Loops</div>
+          <div class="flow-diagram">
+            <div class="flow-stage">
+              <div class="flow-box field"><div class="flow-box-icon">🌡</div><div class="flow-box-title">Field Sensors</div><div class="flow-box-model">RTD / TC</div></div>
+            </div>
+            <div class="signal-arrow"><div class="arrow-line arrow-rtd"></div><div class="arrow-label">Sensor</div></div>
+            <div class="flow-stage">
+              <div class="flow-box modern">
+                <div class="flow-box-icon">🔌</div>
+                <div class="flow-box-title">Signal Converter</div>
+                <div class="flow-box-model">VJ Series / DCP2</div>
+                <div class="flow-box-signal" style="color:var(--signal4)">4–20 mA</div>
+              </div>
+            </div>
+            <div class="signal-arrow"><div class="arrow-line arrow-data"></div><div class="arrow-label">Modbus RTU</div></div>
+            <div class="flow-stage">
+              <div class="flow-box dcs">
+                <div class="flow-box-icon">🌐</div>
+                <div class="flow-box-title">Comm Gateway</div>
+                <div class="flow-box-model">RS-485 → Ethernet</div>
+                <div class="flow-box-signal" style="color:var(--digital)">OPC/Modbus TCP</div>
+              </div>
+            </div>
+            <div class="signal-arrow"><div class="arrow-line arrow-data"></div><div class="arrow-label">Industrial Ethernet</div></div>
+            <div class="flow-stage">
+              <div class="flow-box dcs">
+                <div class="flow-box-icon">🏭</div>
+                <div class="flow-box-title">DCS Server</div>
+                <div class="flow-box-model">CENTUM VP / PCS7</div>
+                <div class="flow-box-signal" style="color:var(--digital)">SCADA</div>
+              </div>
+            </div>
+            <div class="signal-arrow"><div class="arrow-line arrow-data"></div><div class="arrow-label">Operator HMI</div></div>
+            <div class="flow-stage">
+              <div class="flow-box dcs">
+                <div class="flow-box-icon">🖥</div>
+                <div class="flow-box-title">Operator Workstation</div>
+                <div class="flow-box-model">Historical Database<br>Alarm Mgmt</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Modbus simulation -->
+      <div style="margin-top:14px">
+        <div class="scene-title" style="font-size:11px;margin-bottom:8px">Modbus RTU Register Simulation</div>
+        <div class="modbus-display" id="modbusDisplay"></div>
+      </div>
+
+      <div class="grid-2" style="margin-top:12px">
+        <div class="info-card"><h4>✅ Benefits</h4><ul>
+          <li>Centralized monitoring &amp; control</li><li>Historical data archiving</li>
+          <li>Alarm &amp; event management</li><li>Predictive maintenance</li>
+          <li>Asset management integration</li><li>Industry 4.0 ready</li>
+        </ul></div>
+        <div class="info-card"><h4>🔧 Technologies</h4><ul>
+          <li>Yokogawa CENTUM VP</li><li>Yokogawa ProSafe-RS</li>
+          <li>Siemens PCS 7</li><li>Modbus TCP / OPC-UA</li>
+          <li>Ethernet/IP</li><li>SCADA Platforms</li>
+        </ul></div>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 6: COMPARISON ── -->
+    <div class="scenario-view" id="sc-comparison">
+      <div class="scene-title"><span>Alternatives Comparison Matrix</span></div>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Criterion</th>
+            <th>Foxboro 34C-AP (Legacy)</th>
+            <th>Alt 1 — DCP2 Nest</th>
+            <th>Alt 2 — VJ + PH10</th>
+            <th>PR Electronics</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Spare Parts Availability</td><td><span class="cross">✗ None</span></td><td><span class="check">✓ Current</span></td><td><span class="check">✓ Current</span></td><td><span class="check">✓ Current</span></td></tr>
+          <tr><td>RTD (Pt100) Input</td><td><span class="check">✓</span></td><td><span class="check">✓ DR5 Card</span></td><td><span class="check">✓ VJR6/VJU7</span></td><td><span class="check">✓ 9113/4116</span></td></tr>
+          <tr><td>Thermocouple Input</td><td><span class="check">✓ (selected)</span></td><td><span class="check">✓ DT5 Card</span></td><td><span class="check">✓ VJT6/VJU7</span></td><td><span class="check">✓</span></td></tr>
+          <tr><td>3–15 PSI Output</td><td><span class="check">✓ Direct</span></td><td><span class="check">✓ DF0 Card</span></td><td><span class="check">✓ PH10</span></td><td><span class="check">✓ 6185 I/P</span></td></tr>
+          <tr><td>110 VAC Compatible</td><td><span class="check">✓ Native</span></td><td><span class="partial">~ Via X039 PSU</span></td><td><span class="check">✓ VJ direct</span></td><td><span class="check">✓ Universal</span></td></tr>
+          <tr><td>20 PSI Air Reuse</td><td><span class="check">✓</span></td><td><span class="check">✓ Backplane header</span></td><td><span class="check">✓ PPU-16 bar</span></td><td><span class="check">✓</span></td></tr>
+          <tr><td>Rack Mount (19")</td><td><span class="cross">✗ Wall box</span></td><td><span class="check">✓ 5U rack</span></td><td><span class="check">✓ Dual tier</span></td><td><span class="partial">~ DIN rail</span></td></tr>
+          <tr><td>Modbus / DCS Ready</td><td><span class="cross">✗</span></td><td><span class="check">✓ DSC2 card</span></td><td><span class="check">✓ Built-in</span></td><td><span class="partial">~ Optional</span></td></tr>
+          <tr><td>Mixed RTD + TC</td><td><span class="partial">~ Jumpers</span></td><td><span class="check">✓ DR5+DT5</span></td><td><span class="check">✓ VJU7 universal</span></td><td><span class="check">✓</span></td></tr>
+          <tr><td>Hot-Swap Cards</td><td><span class="cross">✗</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="cross">✗</span></td></tr>
+          <tr><td>Cabinet Footprint</td><td>Large (wall boxes)</td><td><span class="check">Compact (1 nest)</span></td><td>2 tiers needed</td><td>DIN rail flexible</td></tr>
+          <tr><td>Accuracy</td><td>±0.5% span</td><td><span class="check">±0.1% typical</span></td><td><span class="check">±0.1% typical</span></td><td><span class="check">±0.1%</span></td></tr>
+          <tr><td>Overall Recommendation</td><td><span class="cross">RETIRE</span></td><td><span class="check" style="font-size:14px">★ PRIMARY</span></td><td><span class="partial">SECONDARY</span></td><td>REFERENCE</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── SCENARIO 7: ALARM ── -->
+    <div class="scenario-view" id="sc-alarm">
+      <div class="scene-title"><span>Alarm &amp; Fault Simulation</span><span class="badge">INTERACTIVE</span></div>
+      <div id="alarmBanner" class="alarm-banner">
+        <h4>⚠ ACTIVE ALARMS</h4>
+        <div class="alarm-list" id="alarmList"></div>
+        <button class="ack-btn" onclick="ackAlarms()">✓ Acknowledge All Alarms</button>
+      </div>
+      <div class="grid-2">
+        <div>
+          <div class="info-card" style="margin-bottom:10px">
+            <h4>🔴 Inject Fault — Loop A (Furnace)</h4>
+            <div class="fault-controls">
+              <button class="fault-btn" onclick="injectFault('A','rtd-open')">RTD Open Circuit — TE-101A</button>
+              <button class="fault-btn" onclick="injectFault('A','air-loss')">Air Supply Loss — 20 PSI Fail</button>
+              <button class="fault-btn" onclick="injectFault('A','card-fail')">Converter Card Failure</button>
+              <button class="fault-btn" onclick="injectFault('A','hi-hi')">Temperature HH Alarm (&gt;600°C)</button>
+              <button class="fault-btn" onclick="injectFault('A','lo-lo')">Temperature LL Alarm (&lt;50°C)</button>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="info-card" style="margin-bottom:10px">
+            <h4>🔴 Inject Fault — Loop B (Reactor)</h4>
+            <div class="fault-controls">
+              <button class="fault-btn" onclick="injectFault('B','rtd-open')">RTD Open Circuit — TE-1008</button>
+              <button class="fault-btn" onclick="injectFault('B','air-loss')">Air Supply Loss — 20 PSI Fail</button>
+              <button class="fault-btn" onclick="injectFault('B','card-fail')">Converter Card Failure</button>
+              <button class="fault-btn" onclick="injectFault('B','hi-hi')">Temperature HH Alarm (&gt;600°C)</button>
+              <button class="fault-btn" onclick="injectFault('B','power')">24 VDC Power Failure</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="info-card">
+        <h4>📋 Alarm Response Procedures</h4>
+        <ul>
+          <li>RTD Open Circuit: Check 3-wire connections at terminal → check DR5/VJR6 card LED → replace card if LED solid red</li>
+          <li>Air Supply Loss: Check 20 PSI header pressure at manifold → check PPU-16 isolation valves → check instrument air filter/regulator</li>
+          <li>Card Failure: Remove and re-seat card → check backplane slot → replace with spare (hot-swap capable)</li>
+          <li>Temperature HH: Check sensor calibration → verify loop span setting → initiate process response per operating procedure</li>
+          <li>Power Failure: Check X039 PSU output → check 110 VAC input → check 24 VDC bus fusing</li>
+        </ul>
+      </div>
+      <div style="margin-top:10px">
+        <button class="ack-btn" style="width:auto;padding:8px 20px;background:var(--border);color:var(--text)" onclick="clearAllFaults()">🔄 Clear All Faults &amp; Reset</button>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO 8: ROADMAP ── -->
+    <div class="scenario-view" id="sc-roadmap">
+      <div class="scene-title"><span>Phased Migration Roadmap</span></div>
+      <div class="roadmap">
+        <div class="roadmap-step">
+          <div class="phase">Phase 1 — Now</div>
+          <h4>Foxboro Legacy Operation</h4>
+          <p>34C-AP R/P converters in service. Risk: no spare parts, mechanical drift. Immediate action required.</p>
+        </div>
+        <div class="roadmap-step">
+          <div class="phase">Phase 2 — Short Term</div>
+          <h4>Modular Replacement</h4>
+          <p>Install DCP2 nest (Alt 1) or VJ+PH10 (Alt 2). Loop-by-loop migration. Preserve existing controllers &amp; recorders.</p>
+        </div>
+        <div class="roadmap-step">
+          <div class="phase">Phase 3 — Medium Term</div>
+          <h4>Electronic Upgrade</h4>
+          <p>Remove PH10/DF0 stage. Route 4–20 mA to GX10 recorders and electronic controllers. Retire pneumatics.</p>
+        </div>
+        <div class="roadmap-step">
+          <div class="phase">Phase 4 — Long Term</div>
+          <h4>DCS / SCADA Migration</h4>
+          <p>CENTUM VP / PCS7 implementation. Modbus gateway. Centralized HMI, historian, alarm management.</p>
+        </div>
+      </div>
+
+      <div style="margin-top:20px">
+        <div class="scene-title" style="font-size:11px;margin-bottom:10px">Phased Implementation Strategy</div>
+        <div class="info-card">
+          <h4>Step 1 — Initial Phase (Zero Production Impact)</h4>
+          <ul>
+            <li>Install empty 16-slot DCP2 or VJ+X018 chassis during routine operation</li>
+            <li>Wire 110 VAC supply and 20 PSI air headers to nest central inputs</li>
+            <li>Cover empty slots with blank faceplates</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h4>Step 2 — Execution Phase (Loop-by-Loop, Scheduled Windows)</h4>
+          <ul>
+            <li>Select individual loops (e.g., TR-1001) during scheduled maintenance windows</li>
+            <li>Remove legacy Foxboro surface enclosure</li>
+            <li>Land existing 3-wire RTD field cables onto nest slot terminals</li>
+            <li>Slide in DR5 (RTD) or DT5 (TC) input card + DF0 output card</li>
+            <li>Route new 3–15 PSI tube to Foxboro controller/recorder</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h4>Step 3 — Balance Racks (Density Optimization)</h4>
+          <ul>
+            <li>1 × DCP2 16-slot nest can replace up to 9 individual Foxboro wall boxes</li>
+            <li>Mixed RTD and TC loops can share the same nest</li>
+            <li>VJU7 universal card recommended for single spare-part strategy</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end center panel -->
+
+  <!-- RIGHT INFO PANEL -->
+  <div class="info-panel">
+    <div class="panel-hdr">Signal Legend</div>
+    <div class="info-section">
+      <div class="signal-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--rtd)"></div>RTD Signal (Field)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--tc)"></div>TC Signal (Field)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--signal4)"></div>4–20 mA / 0–5 VDC</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--psi)"></div>Pneumatic 3–15 PSI</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--digital)"></div>Digital / Modbus</div>
+      </div>
+    </div>
+
+    <div class="panel-hdr">Live Signal Status</div>
+    <div class="info-section">
+      <table class="spec-table">
+        <tr><td>TE-101A Temp</td><td id="s-tempA" style="color:var(--green)">485°C</td></tr>
+        <tr><td>TE-101A 4mA</td><td id="s-4maA" style="color:var(--signal4)">17.0 mA</td></tr>
+        <tr><td>TE-101A PSI</td><td id="s-psiA" style="color:var(--psi)">12.7 PSI</td></tr>
+        <tr><td colspan="2" style="padding-top:6px;border-top:1px solid var(--border)"></td></tr>
+        <tr><td>TE-1008 Temp</td><td id="s-tempB" style="color:var(--green)">412°C</td></tr>
+        <tr><td>TE-1008 4mA</td><td id="s-4maB" style="color:var(--signal4)">14.9 mA</td></tr>
+        <tr><td>TE-1008 PSI</td><td id="s-psiB" style="color:var(--psi)">11.2 PSI</td></tr>
+      </table>
+    </div>
+
+    <div class="panel-hdr">DCP2 Nest Status</div>
+    <div class="info-section">
+      <table class="spec-table">
+        <tr><td>Capacity</td><td>16 Slots</td></tr>
+        <tr><td>Power</td><td>24 VDC Bus</td></tr>
+        <tr><td>AC Input</td><td>110/120 VAC</td></tr>
+        <tr><td>Air Supply</td><td>20 PSI</td></tr>
+        <tr><td>Communication</td><td>RS-485 Modbus</td></tr>
+        <tr><td>Temp Range</td><td>-20 to +60°C</td></tr>
+        <tr><td>Input Cards</td><td>DR5 / DT5</td></tr>
+        <tr><td>Output Cards</td><td>DF0 (E/P)</td></tr>
+      </table>
+    </div>
+
+    <div class="panel-hdr">Project Information</div>
+    <div class="info-section">
+      <table class="spec-table">
+        <tr><td>Project</td><td>Foxboro 34C-AP Modernization</td></tr>
+        <tr><td>Plant</td><td>RASCO Ethylene Plant</td></tr>
+        <tr><td>Location</td><td>Ras Lanuf, Libya</td></tr>
+        <tr><td>Engineer</td><td>RASCO Instrumentation</td></tr>
+        <tr><td>Date</td><td>May 2025</td></tr>
+        <tr><td>Rev.</td><td>A</td></tr>
+      </table>
+    </div>
+  </div>
+
+</div><!-- end main -->
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <div class="status-item"><div class="status-dot status-ok"></div>Loop A — TE-101A: NORMAL</div>
+  <div class="status-item"><div class="status-dot status-ok"></div>Loop B — TE-1008: NORMAL</div>
+  <div class="status-item"><div class="status-dot status-warn"></div>Legacy 34C-AP: OBSOLETE — Replace Urgently</div>
+  <div class="status-item" id="airStatus"><div class="status-dot status-ok"></div>20 PSI Air: OK</div>
+  <div class="status-item" id="powerStatus"><div class="status-dot status-ok"></div>24 VDC Power: OK</div>
+  <div class="status-item" style="margin-left:auto;color:var(--muted)">RASCO Ethylene Plant — Foxboro Modernization Simulator v2.0</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// SCENARIO NAVIGATION
+// ═══════════════════════════════════════════════════
+function setScenario(id, btn) {
+  document.querySelectorAll('.scenario-view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sc-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'dcs') startModbusSimulation();
+}
+
+// ═══════════════════════════════════════════════════
+// LOOP SELECTION
+// ═══════════════════════════════════════════════════
+function selectLoop(loop, card) {
+  document.querySelectorAll('.loop-card').forEach(c => c.classList.remove('active'));
+  card.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════
+// SIGNAL CALCULATOR
+// ═══════════════════════════════════════════════════
+function updateCalc() {
+  const T = parseFloat(document.getElementById('calcTemp').value) || 0;
+  const span = Math.max(0, Math.min(1, T / 600));
+  const mA   = (4 + span * 16).toFixed(2);
+  const v    = (span * 5).toFixed(3);
+  const psi  = (3 + span * 12).toFixed(2);
+  document.getElementById('c4ma').textContent  = mA + ' mA';
+  document.getElementById('c5v').textContent   = v + ' V';
+  document.getElementById('cpsi').textContent  = psi + ' PSI';
+  document.getElementById('cspan').textContent = (span * 100).toFixed(1) + '%';
+}
+
+// ═══════════════════════════════════════════════════
+// LIVE TEMPERATURE SIMULATION
+// ═══════════════════════════════════════════════════
+let tempA = 485, tempB = 412;
+let faultA = null, faultB = null;
+
+function calcSignals(T) {
+  const span = Math.max(0, Math.min(1, T / 600));
+  return {
+    mA:  (4 + span * 16).toFixed(1),
+    psi: (3 + span * 12).toFixed(1)
+  };
+}
+
+function updateLive() {
+  if (!faultA) {
+    tempA += (Math.random() - 0.48) * 4;
+    tempA = Math.max(420, Math.min(560, tempA));
+  }
+  if (!faultB) {
+    tempB += (Math.random() - 0.48) * 3;
+    tempB = Math.max(350, Math.min(480, tempB));
+  }
+
+  const dispA = faultA === 'rtd-open' ? '---' : Math.round(tempA);
+  const dispB = faultB === 'rtd-open' ? '---' : Math.round(tempB);
+  const sigA  = calcSignals(faultA ? 0 : tempA);
+  const sigB  = calcSignals(faultB ? 0 : tempB);
+
+  document.getElementById('tempA').textContent = dispA;
+  document.getElementById('tempB').textContent = dispB;
+  document.getElementById('s-tempA').textContent = dispA + (dispA !== '---' ? '°C' : '');
+  document.getElementById('s-tempB').textContent = dispB + (dispB !== '---' ? '°C' : '');
+
+  document.getElementById('s-4maA').textContent = faultA ? '---' : sigA.mA + ' mA';
+  document.getElementById('s-psiA').textContent = (faultA === 'air-loss') ? '0 PSI' : (faultA ? '---' : sigA.psi + ' PSI');
+  document.getElementById('s-4maB').textContent = faultB ? '---' : sigB.mA + ' mA';
+  document.getElementById('s-psiB').textContent = (faultB === 'air-loss') ? '0 PSI' : (faultB ? '---' : sigB.psi + ' PSI');
+
+  updateModbusDisplay(tempA, tempB, sigA, sigB);
+}
+
+setInterval(updateLive, 1200);
+
+// ═══════════════════════════════════════════════════
+// RACK BUILDER
+// ═══════════════════════════════════════════════════
+function buildRack(containerId, slots) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = '';
+  slots.forEach((s, i) => {
+    const div = document.createElement('div');
+    div.className = 'rack-slot slot-' + (s.type || 'empty');
+    div.innerHTML = `<span class="slot-num">${i + 1}</span><span>${s.label || '—'}</span>`;
+    div.title = s.desc || '';
+    el.appendChild(div);
+  });
+}
+
+// Alt 1: DCP2 slots
+buildRack('rack-alt1', [
+  {type:'tc', label:'DT5\nTC', desc:'Loop A — TE-101A TC Input'},
+  {type:'ep', label:'DF0\nE/P', desc:'Loop A — E/P Output → TIC-101A'},
+  {type:'empty', label:'BLANK'},
+  {type:'empty', label:'BLANK'},
+  {type:'empty', label:'BLANK'},
+  {type:'empty', label:'BLANK'},
+  {type:'empty', label:'BLANK'},
+  {type:'empty', label:'BLANK'},
+  {type:'empty', label:'BLANK'},
+  {type:'empty', label:'BLANK'},
+  {type:'empty', label:'BLANK'},
+  {type:'empty', label:'BLANK'},
+  {type:'empty', label:'BLANK'},
+  {type:'rtd', label:'DR5\nRTD', desc:'Loop B — TE-1008 RTD Input'},
+  {type:'ep', label:'DF0\nE/P', desc:'Loop B — E/P Output → TR-1008'},
+  {type:'comm', label:'DSC2\nMBUS', desc:'RS-485 Modbus RTU Communication Card'},
+]);
+
+// Alt 2: VJ tier
+buildRack('rack-vj', [
+  {type:'tc', label:'VJT6\nTC', desc:'Loop A TC Input'},
+  {type:'rtd', label:'VJR6\nRTD', desc:'Loop B RTD Input'},
+  {type:'empty',label:'—'},{type:'empty',label:'—'},{type:'empty',label:'—'},
+  {type:'empty',label:'—'},{type:'empty',label:'—'},{type:'empty',label:'—'},
+  {type:'empty',label:'—'},{type:'empty',label:'—'},{type:'empty',label:'—'},
+  {type:'empty',label:'—'},{type:'empty',label:'—'},{type:'empty',label:'—'},
+  {type:'empty',label:'—'},{type:'empty',label:'—'},
+]);
+
+// Alt 2: PH10 tier
+buildRack('rack-ph10', [
+  {type:'ep', label:'PH10\nI/P', desc:'Loop A I/P Converter'},
+  {type:'ep', label:'PH10\nI/P', desc:'Loop B I/P Converter'},
+  {type:'empty',label:'—'},{type:'empty',label:'—'},{type:'empty',label:'—'},
+  {type:'empty',label:'—'},{type:'empty',label:'—'},{type:'empty',label:'—'},
+  {type:'empty',label:'—'},{type:'empty',label:'—'},{type:'empty',label:'—'},
+  {type:'empty',label:'—'},{type:'empty',label:'—'},{type:'empty',label:'—'},
+  {type:'empty',label:'—'},{type:'empty',label:'—'},
+]);
+
+// ═══════════════════════════════════════════════════
+// ALARM & FAULT SYSTEM
+// ═══════════════════════════════════════════════════
+const faultMessages = {
+  'rtd-open':  (loop) => `LOOP ${loop}: RTD OPEN CIRCUIT — Signal lost on TE-${loop==='A'?'101A':'1008'}`,
+  'air-loss':  (loop) => `LOOP ${loop}: 20 PSI AIR SUPPLY FAILURE — Pneumatic output at 0 PSI`,
+  'card-fail': (loop) => `LOOP ${loop}: CONVERTER CARD FAILURE — Replace DR5/DT5/DF0 card immediately`,
+  'hi-hi':     (loop) => `LOOP ${loop}: TEMPERATURE HH ALARM — Process temperature exceeds 600°C`,
+  'lo-lo':     (loop) => `LOOP ${loop}: TEMPERATURE LL ALARM — Process temperature below 50°C`,
+  'power':     (loop) => `LOOP ${loop}: 24 VDC POWER FAILURE — Check X039 PSU and bus fusing`,
+};
+
+let activeAlarms = [];
+
+function injectFault(loop, type) {
+  if (loop === 'A') { faultA = type; if (type==='hi-hi') tempA = 615; if (type==='lo-lo') tempA = 30; }
+  if (loop === 'B') { faultB = type; if (type==='hi-hi') tempB = 615; if (type==='lo-lo') tempB = 30; }
+
+  const msg = faultMessages[type](loop);
+  if (!activeAlarms.includes(msg)) activeAlarms.push(msg);
+
+  const banner = document.getElementById('alarmBanner');
+  const list   = document.getElementById('alarmList');
+  banner.classList.add('active');
+  list.innerHTML = activeAlarms.map(a => `<div class="alarm-item">${a}</div>`).join('');
+
+  // Highlight button
+  document.querySelectorAll('.fault-btn').forEach(b => {
+    if (b.textContent.toLowerCase().includes(type.replace('-',' ')) && b.onclick.toString().includes(`'${loop}'`)) {
+      b.classList.add('active-fault');
+    }
+  });
+
+  // Status bar
+  if (type === 'air-loss') document.getElementById('airStatus').innerHTML = '<div class="status-dot status-err"></div>20 PSI Air: FAIL';
+  if (type === 'power')    document.getElementById('powerStatus').innerHTML = '<div class="status-dot status-err"></div>24 VDC Power: FAIL';
+}
+
+function ackAlarms() {
+  document.getElementById('alarmBanner').classList.remove('active');
+}
+
+function clearAllFaults() {
+  faultA = null; faultB = null;
+  activeAlarms = [];
+  tempA = 485; tempB = 412;
+  document.getElementById('alarmBanner').classList.remove('active');
+  document.getElementById('alarmList').innerHTML = '';
+  document.querySelectorAll('.fault-btn').forEach(b => b.classList.remove('active-fault'));
+  document.getElementById('airStatus').innerHTML = '<div class="status-dot status-ok"></div>20 PSI Air: OK';
+  document.getElementById('powerStatus').innerHTML = '<div class="status-dot status-ok"></div>24 VDC Power: OK';
+}
+
+// ═══════════════════════════════════════════════════
+// MODBUS SIMULATION
+// ═══════════════════════════════════════════════════
+let modbusInterval = null;
+
+function updateModbusDisplay(tA, tB, sigA, sigB) {
+  const el = document.getElementById('modbusDisplay');
+  if (!el) return;
+  const rows = [
+    {addr:'40001', tag:'TE-101A_TEMP',   val: Math.round(tA).toString().padStart(6) + ' °C'},
+    {addr:'40002', tag:'TE-101A_4MA',    val: sigA.mA.padStart(6) + ' mA'},
+    {addr:'40003', tag:'TE-101A_PSI',    val: sigA.psi.padStart(6) + ' PSI'},
+    {addr:'40004', tag:'TE-101A_STATUS', val: faultA ? 'FAULT  ' : 'OK     '},
+    {addr:'40011', tag:'TE-1008_TEMP',   val: Math.round(tB).toString().padStart(6) + ' °C'},
+    {addr:'40012', tag:'TE-1008_4MA',    val: sigB.mA.padStart(6) + ' mA'},
+    {addr:'40013', tag:'TE-1008_PSI',    val: sigB.psi.padStart(6) + ' PSI'},
+    {addr:'40014', tag:'TE-1008_STATUS', val: faultB ? 'FAULT  ' : 'OK     '},
+    {addr:'40020', tag:'AIR_SUPPLY_PSI', val: '  20.0 PSI'},
+    {addr:'40021', tag:'DC_BUS_VDC',     val: '  24.1 VDC'},
+  ];
+  el.innerHTML = rows.map(r =>
+    `<div class="modbus-row"><span class="modbus-addr">[${r.addr}]</span><span class="modbus-tag">${r.tag.padEnd(16)}</span><span class="modbus-val">${r.val}</span></div>`
+  ).join('');
+}
+
+function startModbusSimulation() {}
+
+// Initial calc
+updateCalc();
+</script>
+</body>
+</html>
