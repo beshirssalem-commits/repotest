@@ -1,3 +1,4 @@
+cat > /mnt/user-data/outputs/index.html << 'HTMLEOF'
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -89,7 +90,7 @@ header{background:linear-gradient(135deg,#0d1117,#1c2330);border-bottom:2px soli
 /* ARROWS */
 .arr{display:flex;flex-direction:column;align-items:center;width:52px;flex-shrink:0;gap:2px}
 .aln{height:2px;width:100%;position:relative;border-radius:1px}
-.aln::after{content:'▶';position:absolute;right:-5px;top:-7px;font-size:9px}
+.aln::after{content:'▶️';position:absolute;right:-5px;top:-7px;font-size:9px}
 .aln.rtd{background:var(--rtd)}.aln.rtd::after{color:var(--rtd)}
 .aln.tc{background:var(--tc)}.aln.tc::after{color:var(--tc)}
 .aln.m4{background:var(--sig4)}.aln.m4::after{color:var(--sig4)}
@@ -150,7 +151,7 @@ header{background:linear-gradient(135deg,#0d1117,#1c2330);border-bottom:2px soli
 .abanner h4{color:var(--red);font-size:11px;margin-bottom:5px}
 .alist{display:flex;flex-direction:column;gap:3px}
 .aitem{font-size:10px;color:var(--muted)}
-.aitem::before{content:'⚠ ';color:var(--red)}
+.aitem::before{content:'⚠️ ';color:var(--red)}
 .fbtns{display:flex;flex-direction:column;gap:5px;margin-top:8px}
 .fbtn{background:var(--panel);border:1px solid var(--bdr);color:var(--text);border-radius:3px;padding:5px 9px;font-size:10px;cursor:pointer;text-align:left;transition:all .15s}
 .fbtn:hover{border-color:var(--red);color:var(--red)}
@@ -163,7 +164,7 @@ header{background:linear-gradient(135deg,#0d1117,#1c2330);border-bottom:2px soli
 .rstep{flex:1;background:var(--panel);border:1px solid var(--bdr);border-right:none;padding:12px 10px;position:relative}
 .rstep:last-child{border-right:1px solid var(--bdr);border-radius:0 5px 5px 0}
 .rstep:first-child{border-radius:5px 0 0 5px}
-.rstep::after{content:'▶';position:absolute;right:-9px;top:50%;transform:translateY(-50%);color:var(--gold);font-size:11px;z-index:1}
+.rstep::after{content:'▶️';position:absolute;right:-9px;top:50%;transform:translateY(-50%);color:var(--gold);font-size:11px;z-index:1}
 .rstep:last-child::after{display:none}
 .rstep .ph{font-size:8px;color:#555;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
 .rstep h4{font-size:10px;color:var(--gold);margin-bottom:5px;font-weight:700}
@@ -271,17 +272,17 @@ header{background:linear-gradient(135deg,#0d1117,#1c2330);border-bottom:2px soli
       <div class="lrow">
         <div class="lrow-hdr"><div class="ldot" style="background:var(--tc)"></div>Loop A – Furnace A (TE-101A → Foxboro 34C-AP → TIC-101A)</div>
         <div class="flow">
-          <div class="fstage"><div class="fbox field tc"><div class="fi">🌡</div><div class="ft">TE-101A</div><div class="fm">TC Type K</div><div class="fs" style="color:var(--tc)">mV Signal</div></div></div>
+          <div class="fstage"><div class="fbox field tc"><div class="fi">🌡️</div><div class="ft">TE-101A</div><div class="fm">TC Type K</div><div class="fs" style="color:var(--tc)">mV Signal</div></div></div>
           <div class="arr"><div class="aln tc"></div><div class="albl">2-Wire TC</div></div>
           <div class="fstage"><div class="fbox legacy"><div class="fi">⚙️</div><div class="ft">Foxboro 34C-AP</div><div class="fm">R/P Converter</div><div class="fs" style="color:var(--red)">OBSOLETE</div></div></div>
           <div class="arr"><div class="aln psi"></div><div class="albl">3–15 PSI</div></div>
-          <div class="fstage"><div class="fbox ctrl"><div class="fi">🎛</div><div class="ft">TIC-101A</div><div class="fm">Pneumatic Controller</div></div></div>
+          <div class="fstage"><div class="fbox ctrl"><div class="fi">🎛️</div><div class="ft">TIC-101A</div><div class="fm">Pneumatic Controller</div></div></div>
         </div>
       </div>
       <div class="lrow">
         <div class="lrow-hdr"><div class="ldot" style="background:var(--rtd)"></div>Loop B – Reactor (TE-1008 → Foxboro 34C-AP → TR-1008)</div>
         <div class="flow">
-          <div class="fstage"><div class="fbox field"><div class="fi">🌡</div><div class="ft">TE-1008</div><div class="fm">Pt100 RTD 3-Wire</div><div class="fs" style="color:var(--rtd)">Ω Resistance</div></div></div>
+          <div class="fstage"><div class="fbox field"><div class="fi">🌡️</div><div class="ft">TE-1008</div><div class="fm">Pt100 RTD 3-Wire</div><div class="fs" style="color:var(--rtd)">Ω Resistance</div></div></div>
           <div class="arr"><div class="aln rtd"></div><div class="albl">3-Wire RTD</div></div>
           <div class="fstage"><div class="fbox legacy"><div class="fi">⚙️</div><div class="ft">Foxboro 34C-AP</div><div class="fm">R/P Converter</div><div class="fs" style="color:var(--red)">OBSOLETE</div></div></div>
           <div class="arr"><div class="aln psi"></div><div class="albl">3–15 PSI</div></div>
@@ -290,7 +291,7 @@ header{background:linear-gradient(135deg,#0d1117,#1c2330);border-bottom:2px soli
       </div>
     </div>
     <div class="g2">
-      <div class="icard"><h4>⚠ Obsolescence Issues</h4><ul>
+      <div class="icard"><h4>⚠️ Obsolescence Issues</h4><ul>
         <li>Fully discontinued — no spare parts available</li>
         <li>Force-balance nozzle-flapper drifts over time</li>
         <li>Vibration causes calibration loss</li>
@@ -316,19 +317,19 @@ header{background:linear-gradient(135deg,#0d1117,#1c2330);border-bottom:2px soli
       <div class="lrow">
         <div class="lrow-hdr"><div class="ldot" style="background:var(--tc)"></div>Loop A – Furnace A (TE-101A → DT5 Card → DF0 Card → TIC-101A)</div>
         <div class="flow">
-          <div class="fstage"><div class="fbox field tc"><div class="fi">🌡</div><div class="ft">TE-101A</div><div class="fm">TC Type K</div></div></div>
+          <div class="fstage"><div class="fbox field tc"><div class="fi">🌡️</div><div class="ft">TE-101A</div><div class="fm">TC Type K</div></div></div>
           <div class="arr"><div class="aln tc"></div><div class="albl">2-Wire TC</div></div>
           <div class="fstage"><div class="fbox mod"><div class="fi">🔌</div><div class="ft">DT5 Card</div><div class="fm">TC Input · Slot 1</div><div class="fs" style="color:var(--sig4)">→ 4–20 mA</div></div></div>
           <div class="arr"><div class="aln m4"></div><div class="albl">4–20 mA</div></div>
           <div class="fstage"><div class="fbox pneu"><div class="fi">💨</div><div class="ft">DF0 Card</div><div class="fm">E/P Converter · Slot 2</div><div class="fs" style="color:var(--psi)">→ 3–15 PSI</div></div></div>
           <div class="arr"><div class="aln psi"></div><div class="albl">3–15 PSI</div></div>
-          <div class="fstage"><div class="fbox ctrl"><div class="fi">🎛</div><div class="ft">TIC-101A</div><div class="fm">Pneumatic Controller</div></div></div>
+          <div class="fstage"><div class="fbox ctrl"><div class="fi">🎛️</div><div class="ft">TIC-101A</div><div class="fm">Pneumatic Controller</div></div></div>
         </div>
       </div>
       <div class="lrow">
         <div class="lrow-hdr"><div class="ldot" style="background:var(--rtd)"></div>Loop B – Reactor (TE-1008 → DR5 Card → DF0 Card → TR-1008)</div>
         <div class="flow">
-          <div class="fstage"><div class="fbox field"><div class="fi">🌡</div><div class="ft">TE-1008</div><div class="fm">Pt100 RTD 3-Wire</div></div></div>
+          <div class="fstage"><div class="fbox field"><div class="fi">🌡️</div><div class="ft">TE-1008</div><div class="fm">Pt100 RTD 3-Wire</div></div></div>
           <div class="arr"><div class="aln rtd"></div><div class="albl">3-Wire RTD</div></div>
           <div class="fstage"><div class="fbox mod"><div class="fi">🔌</div><div class="ft">DR5 Card</div><div class="fm">RTD Input · Slot 14</div><div class="fs" style="color:var(--sig4)">→ 4–20 mA</div></div></div>
           <div class="arr"><div class="aln m4"></div><div class="albl">4–20 mA</div></div>
@@ -373,19 +374,19 @@ header{background:linear-gradient(135deg,#0d1117,#1c2330);border-bottom:2px soli
       <div class="lrow">
         <div class="lrow-hdr"><div class="ldot" style="background:var(--tc)"></div>Loop A – Furnace A (TE-101A → VJT6/VJU7 → PH10 → TIC-101A)</div>
         <div class="flow">
-          <div class="fstage"><div class="fbox field tc"><div class="fi">🌡</div><div class="ft">TE-101A</div><div class="fm">TC Type K</div></div></div>
+          <div class="fstage"><div class="fbox field tc"><div class="fi">🌡️</div><div class="ft">TE-101A</div><div class="fm">TC Type K</div></div></div>
           <div class="arr"><div class="aln tc"></div><div class="albl">2-Wire TC</div></div>
           <div class="fstage"><div class="fbox mod"><div class="fi">🔌</div><div class="ft">VJT6 / VJU7</div><div class="fm">TC Converter · Tier 1</div><div class="fs" style="color:var(--sig4)">→ 4–20 mA</div></div></div>
           <div class="arr"><div class="aln m4"></div><div class="albl">4–20 mA jumper</div></div>
           <div class="fstage"><div class="fbox pneu"><div class="fi">💨</div><div class="ft">PH10</div><div class="fm">I/P Converter · Tier 2</div><div class="fs" style="color:var(--psi)">→ 3–15 PSI</div></div></div>
           <div class="arr"><div class="aln psi"></div><div class="albl">3–15 PSI</div></div>
-          <div class="fstage"><div class="fbox ctrl"><div class="fi">🎛</div><div class="ft">TIC-101A</div><div class="fm">Foxboro Controller</div></div></div>
+          <div class="fstage"><div class="fbox ctrl"><div class="fi">🎛️</div><div class="ft">TIC-101A</div><div class="fm">Foxboro Controller</div></div></div>
         </div>
       </div>
       <div class="lrow">
         <div class="lrow-hdr"><div class="ldot" style="background:var(--rtd)"></div>Loop B – Reactor (TE-1008 → VJR6/VJU7 → PH10 → TR-1008)</div>
         <div class="flow">
-          <div class="fstage"><div class="fbox field"><div class="fi">🌡</div><div class="ft">TE-1008</div><div class="fm">Pt100 RTD 3-Wire</div></div></div>
+          <div class="fstage"><div class="fbox field"><div class="fi">🌡️</div><div class="ft">TE-1008</div><div class="fm">Pt100 RTD 3-Wire</div></div></div>
           <div class="arr"><div class="aln rtd"></div><div class="albl">3-Wire RTD</div></div>
           <div class="fstage"><div class="fbox mod"><div class="fi">🔌</div><div class="ft">VJR6 / VJU7</div><div class="fm">RTD Converter · Tier 1</div><div class="fs" style="color:var(--sig4)">→ 4–20 mA</div></div></div>
           <div class="arr"><div class="aln m4"></div><div class="albl">4–20 mA jumper</div></div>
@@ -413,7 +414,7 @@ header{background:linear-gradient(135deg,#0d1117,#1c2330);border-bottom:2px soli
         <li>VJU7 universal card → single spare type for both RTD &amp; TC</li>
         <li>Dedicated tiers — each independently serviceable</li>
       </ul></div>
-      <div class="icard"><h4>⚠ Considerations</h4><ul>
+      <div class="icard"><h4>⚠️ Considerations</h4><ul>
         <li>Two separate chassis (more cabinet space needed)</li>
         <li>Hardwired 4–20 mA jumpers between Tier 1 and Tier 2</li>
         <li>More internal wiring connection points in panel</li>
@@ -429,17 +430,17 @@ header{background:linear-gradient(135deg,#0d1117,#1c2330);border-bottom:2px soli
       <div class="lrow">
         <div class="lrow-hdr"><div class="ldot" style="background:var(--sig4)"></div>Loop A – Furnace A (TE-101A → Converter → GX10 Recorder / Electronic Controller)</div>
         <div class="flow">
-          <div class="fstage"><div class="fbox field tc"><div class="fi">🌡</div><div class="ft">TE-101A</div><div class="fm">TC Type K</div></div></div>
+          <div class="fstage"><div class="fbox field tc"><div class="fi">🌡️</div><div class="ft">TE-101A</div><div class="fm">TC Type K</div></div></div>
           <div class="arr"><div class="aln tc"></div><div class="albl">TC Signal</div></div>
           <div class="fstage"><div class="fbox mod"><div class="fi">🔌</div><div class="ft">VJ Converter</div><div class="fm">VJCE-01A / DCP2</div><div class="fs" style="color:var(--sig4)">→ 4–20 mA</div></div></div>
           <div class="arr"><div class="aln m4"></div><div class="albl">4–20 mA</div></div>
           <div class="fstage"><div class="fbox dcs"><div class="fi">📊</div><div class="ft">GX10 Recorder</div><div class="fm">Paperless Electronic</div><div class="fs" style="color:var(--purple)">Ethernet</div></div></div>
           <div class="arr"><div class="aln dig"></div><div class="albl">Trend / Alarm</div></div>
-          <div class="fstage"><div class="fbox dcs"><div class="fi">🖥</div><div class="ft">Electronic Controller</div><div class="fm">Yokogawa / Siemens</div></div></div>
+          <div class="fstage"><div class="fbox dcs"><div class="fi">🖥️</div><div class="ft">Electronic Controller</div><div class="fm">Yokogawa / Siemens</div></div></div>
         </div>
       </div>
       <div class="lrow" style="border-color:var(--orange)">
-        <div class="lrow-hdr" style="color:var(--orange)">⚠ Pneumatic Stage Removed — PH10 / DF0 Decommissioned</div>
+        <div class="lrow-hdr" style="color:var(--orange)">⚠️ Pneumatic Stage Removed — PH10 / DF0 Decommissioned</div>
         <p style="font-size:10px;color:var(--muted);line-height:1.6">The 4–20 mA signal from the temperature converter is routed directly to electronic instrumentation. No pneumatic conversion stage is required. Instrument air tubing from previous stage can be capped and isolated. Foxboro pneumatic controllers and recorders are replaced by Yokogawa GX10 or equivalent electronic systems.</p>
       </div>
     </div>
@@ -467,7 +468,7 @@ header{background:linear-gradient(135deg,#0d1117,#1c2330);border-bottom:2px soli
     <div class="lrow">
       <div class="lrow-hdr"><div class="ldot" style="background:var(--dig)"></div>Full Digital Migration — All Process Loops</div>
       <div class="flow">
-        <div class="fstage"><div class="fbox field"><div class="fi">🌡</div><div class="ft">Field Sensors</div><div class="fm">RTD / TC</div></div></div>
+        <div class="fstage"><div class="fbox field"><div class="fi">🌡️</div><div class="ft">Field Sensors</div><div class="fm">RTD / TC</div></div></div>
         <div class="arr"><div class="aln rtd"></div><div class="albl">Sensor</div></div>
         <div class="fstage"><div class="fbox mod"><div class="fi">🔌</div><div class="ft">Signal Converter</div><div class="fm">VJ Series / DCP2</div><div class="fs" style="color:var(--sig4)">4–20 mA</div></div></div>
         <div class="arr"><div class="aln dig"></div><div class="albl">Modbus RTU</div></div>
@@ -475,7 +476,7 @@ header{background:linear-gradient(135deg,#0d1117,#1c2330);border-bottom:2px soli
         <div class="arr"><div class="aln dig"></div><div class="albl">Industrial Ethernet</div></div>
         <div class="fstage"><div class="fbox dcs"><div class="fi">🏭</div><div class="ft">DCS Server</div><div class="fm">CENTUM VP / PCS7</div><div class="fs" style="color:var(--dig)">SCADA</div></div></div>
         <div class="arr"><div class="aln dig"></div><div class="albl">HMI</div></div>
-        <div class="fstage"><div class="fbox dcs"><div class="fi">🖥</div><div class="ft">Operator Workstation</div><div class="fm">Historian · Alarms · Trends</div></div></div>
+        <div class="fstage"><div class="fbox dcs"><div class="fi">🖥️</div><div class="ft">Operator Workstation</div><div class="fm">Historian · Alarms · Trends</div></div></div>
       </div>
     </div>
     <div style="margin-top:12px">
@@ -529,7 +530,7 @@ header{background:linear-gradient(135deg,#0d1117,#1c2330);border-bottom:2px soli
   <div class="scenario" id="sc-alarm">
     <div class="sc-title">Alarm &amp; Fault Simulation <span class="badge">INTERACTIVE</span></div>
     <div class="abanner" id="abanner">
-      <h4>⚠ ACTIVE ALARMS</h4>
+      <h4>⚠️ ACTIVE ALARMS</h4>
       <div class="alist" id="alist"></div>
       <button class="ack-btn" onclick="ackAlarms()">✓ Acknowledge All Alarms</button>
     </div>
@@ -822,3 +823,5 @@ function clearFaults() {
 </script>
 </body>
 </html>
+HTMLEOF
+echo "Done: $(wc -c < /mnt/user-data/outputs/index.html) bytes"
